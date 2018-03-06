@@ -27,7 +27,14 @@ func update(screen *et.Image) error {
 
 	processDecoys()
 	processGalaxies()
-	//processGhosts()
+	processGhosts()
+
+	// 当たり判定とベクトル変化
+	for _, d := range decoys {
+		for _, g := range ghosts {
+			collision(d, g)
+		}
+	}
 
 	drawAll(screen)
 

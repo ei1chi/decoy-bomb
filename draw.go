@@ -18,6 +18,13 @@ func drawAll(screen *et.Image) {
 		screen.DrawImage(sp.image, op)
 	}
 
+	sp = sprites["ghost"]
+	for _, g := range ghosts {
+		op := sp.center()
+		op.GeoM.Translate(g.pos.x, g.pos.y)
+		screen.DrawImage(sp.image, op)
+	}
+
 	sp = sprites["circle"]
 	for _, d := range decoys {
 		op := sp.center()
