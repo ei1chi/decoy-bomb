@@ -21,6 +21,9 @@ func drawAll(screen *et.Image) {
 	sp = sprites["ghost"]
 	for _, g := range ghosts {
 		op := sp.center()
+		if g.pos.x > 200 {
+			op.GeoM.Scale(-1.0, 1.0)
+		}
 		op.GeoM.Translate(g.pos.x, g.pos.y)
 		screen.DrawImage(sp.image, op)
 	}
