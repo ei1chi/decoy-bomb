@@ -1,31 +1,22 @@
 package main
 
 import (
-	"math"
-
 	et "github.com/hajimehoshi/ebiten"
 )
 
 func drawAll(screen *et.Image) {
 
 	var sp *Sprite
+	op := &et.DrawImageOptions{}
 
 	sp = sprites["galaxy"]
 	for _, g := range galaxies {
-		op := sp.center()
-		op.GeoM.Rotate(math.Pi * (float64(g.life) / 60))
-		op.GeoM.Translate(g.pos.x, g.pos.y)
-		screen.DrawImage(sp.image, op)
+		g.draw(screen)
 	}
 
 	sp = sprites["ghost"]
 	for _, g := range ghosts {
-		op := sp.center()
-		if g.pos.x > 200 {
-			op.GeoM.Scale(-1.0, 1.0)
-		}
-		op.GeoM.Translate(g.pos.x, g.pos.y)
-		screen.DrawImage(sp.image, op)
+		g.draw(screen)
 	}
 
 	sp = sprites["circle"]
@@ -33,7 +24,7 @@ func drawAll(screen *et.Image) {
 		op := sp.center()
 		op.GeoM.Translate(d.pos.x, d.pos.y)
 		rate := float64(d.power) / powerMax
-		alpha := -1.0 + (0.7 * rate)
+		alpha := -1.0 + (0.6 * rate)
 		op.ColorM.Translate(0, 0, 0, alpha)
 		screen.DrawImage(sp.image, op)
 	}
@@ -47,4 +38,9 @@ func drawAll(screen *et.Image) {
 		op.ColorM.Translate(0, 0, 0, rate-1.0)
 		screen.DrawImage(sp.image, op)
 	}
+
+	sp = sprites["castle"]
+	op = &et.DrawImageOptions{}
+	op.GeoM.Translate(240-sp.halfW, 640-sp.halfH*2)
+	screen.DrawImage(sp.image, op)
 }
