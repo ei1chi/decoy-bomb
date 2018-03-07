@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	galaxies []Enemy
+	galaxies []Galaxy
 )
 
 func processGalaxies() {
@@ -20,21 +20,20 @@ func processGalaxies() {
 // Base Class
 //=========================
 
+type Galaxy interface {
+	update()
+	draw(screen *et.Image)
+	isDead() bool
+}
+
 type GalaxyBase struct {
 	count int
 	dead  bool
 	pos   Point
 }
 
-func (g *GalaxyBase) hit(int) {
-}
-
 func (g *GalaxyBase) isDead() bool {
 	return g.dead
-}
-
-func (g *GalaxyBase) collInfo() (x, y, r float64) {
-	return g.pos.x, g.pos.y, 32
 }
 
 func (g *GalaxyBase) drawSimple(sc *et.Image) {

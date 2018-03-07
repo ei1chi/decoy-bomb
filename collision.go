@@ -2,7 +2,7 @@ package main
 
 import "math"
 
-func collision(d *Decoy, g Enemy) {
+func collision(d *Decoy, g Ghost) {
 	gx, gy, gr := g.collInfo()
 	distsq := math.Pow((d.pos.x-gx), 2) + math.Pow((d.pos.y-gy), 2)
 	limitsq := math.Pow((d.radius + gr), 2)

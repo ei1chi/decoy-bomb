@@ -12,14 +12,6 @@ type Point struct {
 	x, y float64
 }
 
-type Enemy interface {
-	update()
-	draw(screen *et.Image)
-	isDead() bool
-	collInfo() (x, y, r float64)
-	hit(int)
-}
-
 func init() {
 	loadSprites([]string{
 		"galaxy",
@@ -61,19 +53,19 @@ func update(screen *et.Image) error {
 }
 
 func sweepAll() {
-	next := galaxies[:0]
+	ngx := galaxies[:0]
 	for _, g := range galaxies {
 		if !g.isDead() {
-			next = append(next, g)
+			ngx = append(ngx, g)
 		}
 	}
-	galaxies = next
+	galaxies = ngx
 
-	next = ghosts[:0]
+	ngs := ghosts[:0]
 	for _, g := range ghosts {
 		if !g.isDead() {
-			next = append(next, g)
+			ngs = append(ngs, g)
 		}
 	}
-	ghosts = next
+	ghosts = ngs
 }

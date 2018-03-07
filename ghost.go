@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ghosts []Enemy
+	ghosts []Ghost
 )
 
 func processGhosts() {
@@ -19,6 +19,14 @@ func processGhosts() {
 
 // Base Class
 //=========================
+
+type Ghost interface {
+	update()
+	draw(screen *et.Image)
+	isDead() bool
+	collInfo() (x, y, r float64)
+	hit(int)
+}
 
 type GhostBase struct {
 	count        int
