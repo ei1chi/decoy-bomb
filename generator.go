@@ -12,8 +12,7 @@ func processGenerator() {
 	if genCount < 0 {
 		genCount = interval
 		g := &NormalGx{}
-		x, y := rand.Intn(480), rand.Intn(640)
-		g.pos = Point{float64(x), float64(y)}
+		g.pos = complex(rand.Float64()*480, rand.Float64()*640)
 		galaxies = append(galaxies, g)
 	}
 }

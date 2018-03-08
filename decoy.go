@@ -3,35 +3,63 @@ package main
 import et "github.com/hajimehoshi/ebiten"
 
 type Decoy struct {
+	exist  bool
 	power  int
 	radius float64
-	pos    Point
+	pos    complex128
 }
 
-func newDecoy(pos Point) *Decoy {
-	return &Decoy{
-		power:  powerMax,
-		radius: 125,
-		pos:    pos,
+type Decoys struct {
+	h   TankHistory
+	arr []Decoy
+}
+
+func (d *Decoys) init(size int) {
+	d.h.Init(size)
+	d.arr = make([]Decoy, size)
+}
+
+func (d *Decoys) add(val Decoy) error {
+	idx, err := d.h.Pop()
+	if err != nil {
+		return err
 	}
+	d.arr[idx] = val
+	return nil
+}
+
+func (d *Decoys) remove(idx int) {
+	d.arr[idx].exist = false
+	d.h.Push(idx)
 }
 
 const (
-	decoysMax = 3
+	decoysMax = 5
 	powerMax  = 300
 )
 
 var (
-	decoys      []*Decoy
+	decoys      *Decoys
 	isMouseHold bool
 )
+
+func initDecoys() {
+	decoys = &Decoys{}
+	decoys.init(decoysMax)
+}
 
 func processDecoys() {
 	// トリガー処理
 	x, y := et.CursorPosition()
 	if et.IsMouseButtonPressed(et.MouseButtonLeft) {
-		if !isMouseHold && len(decoys) < decoysMax {
-			decoys = append(decoys, newDecoy(Point{float64(x), float64(y)}))
+		if !isMouseHold {
+			d := Decoy{
+				exist:  true,
+				power:  powerMax,
+				radius: 125,
+				pos:    complex(float64(x), float64(y)),
+			}
+			decoys.add(d)
 		}
 		isMouseHold = true
 	} else {
@@ -39,12 +67,14 @@ func processDecoys() {
 	}
 
 	// 減衰処理
-	next := make([]*Decoy, 0, decoysMax)
-	for _, d := range decoys {
+	for i, _ := range decoys.arr {
+		d := &decoys.arr[i]
+		if !d.exist {
+			continue
+		}
 		d.power -= 1
-		if d.power > 0 {
-			next = append(next, d)
+		if d.power < 0 {
+			decoys.remove(i)
 		}
 	}
-	decoys = next
 }

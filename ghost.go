@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math/cmplx"
 
 	et "github.com/hajimehoshi/ebiten"
 )
@@ -11,7 +12,6 @@ var (
 )
 
 func processGhosts() {
-
 	for _, g := range ghosts {
 		g.update()
 	}
@@ -24,24 +24,23 @@ type Ghost interface {
 	update()
 	draw(screen *et.Image)
 	isDead() bool
-	collInfo() (x, y, r float64)
+	collInfo() (pos complex128, r float64)
 	hit(int)
 }
 
 type GhostBase struct {
-	count        int
-	dead         bool
-	pos          Point
-	speed, angle float64
-	leadTo       int // player base(-1) or decoy(0~)
+	count    int
+	dead     bool
+	pos, vec complex128
+	leadTo   int // player base(-1) or decoy(0~)
 }
 
 func (g *GhostBase) isDead() bool {
 	return g.dead
 }
 
-func (g *GhostBase) collInfo() (x, y, r float64) {
-	return g.pos.x, g.pos.y, 32
+func (g *GhostBase) collInfo() (pos complex128, r float64) {
+	return g.pos, 32
 }
 
 func (g *GhostBase) hit(id int) {
@@ -54,18 +53,20 @@ func (g *GhostBase) hit(id int) {
 func (g *GhostBase) drawSimple(sc *et.Image) {
 	sp := sprites["ghost"]
 	op := sp.center()
-	if g.pos.x > 200 {
+	if real(g.vec) < 0 {
 		op.GeoM.Scale(-1.0, 1.0)
 	}
-	op.GeoM.Translate(g.pos.x, g.pos.y)
+	op.GeoM.Translate(real(g.pos), imag(g.pos))
 	sc.DrawImage(sp.image, op)
 }
 
 func (g *GhostBase) checkArea() {
-	if g.pos.x < -50 || 530 < g.pos.x {
+	x := real(g.pos)
+	if x < -50 || 530 < x {
 		g.dead = true
 	}
-	if g.pos.y < -50 || 690 < g.pos.y {
+	y := imag(g.pos)
+	if y < -50 || 690 < y {
 		g.dead = true
 	}
 }
@@ -75,6 +76,7 @@ func (g *GhostBase) checkArea() {
 
 type NormalGs struct {
 	GhostBase
+	speed float64
 }
 
 func (g *NormalGs) draw(sc *et.Image) {
@@ -84,13 +86,24 @@ func (g *NormalGs) draw(sc *et.Image) {
 func (g *NormalGs) update() {
 	switch {
 	case g.count == 0: // init
-	case g.count < 30:
-		g.pos.x += 1
-	case 120 < g.count:
+	case g.count < 60:
+		g.speed = 2.0 - (float64(g.count)/60)*1.0
+	case g.count < 90:
+		g.speed = 1.0 + float64(g.count-60)/30
+	case g.count < 180:
+		g.speed = 2
+	default:
 		g.dead = true
 	}
-	//g.pos.x += g.vec.x
-	//g.pos.y += g.vec.y
+
+	to := decoys.arr[g.leadTo]
+	if to.exist {
+		diff := to.pos - g.pos
+		diff /= complex(cmplx.Abs(diff), 0)
+		g.vec += diff * 0.7
+		g.vec = g.vec / complex(cmplx.Abs(g.vec)*g.speed, 0)
+	}
+	g.pos += g.vec
 	g.checkArea()
 	g.count += 1
 }

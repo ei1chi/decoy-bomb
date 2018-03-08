@@ -2,29 +2,46 @@ package main
 
 import (
 	"errors"
+	"fmt"
+	"log"
+	"math/cmplx"
 	"math/rand"
 	"time"
 
 	et "github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-type Point struct {
-	x, y float64
+var (
+	ErrSuccess = errors.New("successfully finished")
+)
+
+const (
+	around = 4.0 // 4 phases
+)
+
+func powi(angle float64) complex128 {
+	return cmplx.Pow(1i, complex(angle, 0))
 }
 
 func init() {
+	initDecoys()
+}
+
+func main() {
 	loadSprites([]string{
 		"galaxy",
 		"ghost",
 		"decoy",
 		"circle",
 		"castle",
+		"quit",
 	})
-}
-
-func main() {
 	rand.Seed(time.Now().UnixNano())
-	et.Run(update, 480, 640, 1, "decoy and bomb")
+	err := et.Run(update, 480, 640, 1, "decoy and bomb")
+	if err != nil && err != ErrSuccess {
+		log.Fatal(err)
+	}
 }
 
 func update(screen *et.Image) error {
@@ -35,19 +52,23 @@ func update(screen *et.Image) error {
 	processGhosts()
 
 	// 当たり判定とベクトル変化
-	for _, d := range decoys {
-		for _, g := range ghosts {
-			collision(d, g)
-		}
-	}
+	collision()
 
 	drawAll(screen)
 	sweepAll()
 
+	// 終了判定
 	quit := et.IsKeyPressed(et.KeyQ)
+	x, y := et.CursorPosition()
+	if (480-32) < x && y < 32 && et.IsMouseButtonPressed(et.MouseButtonLeft) {
+		quit = true
+	}
 	if quit {
 		return errors.New("success")
 	}
+
+	// FPS（デバッグ用）
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("FPS: %f\nGhosts: %d", et.CurrentFPS(), len(ghosts)))
 
 	return nil
 }
