@@ -60,14 +60,21 @@ func update(screen *et.Image) error {
 	// 終了判定
 	quit := et.IsKeyPressed(et.KeyQ)
 	x, y := et.CursorPosition()
-	if (480-32) < x && y < 32 && et.IsMouseButtonPressed(et.MouseButtonLeft) {
-		quit = true
+	touched := false
+	for _, t := range et.Touches() {
+		x, y = t.Position()
+		touched = true
+	}
+	if (480-32) < x && y < 32 {
+		if touched || et.IsMouseButtonPressed(et.MouseButtonLeft) {
+			quit = true
+		}
 	}
 	if quit {
 		return errors.New("success")
 	}
 
-	// FPS（デバッグ用）
+	// FPSほかデバッグ用
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("FPS: %f\nGhosts: %d", et.CurrentFPS(), len(ghosts)))
 
 	return nil

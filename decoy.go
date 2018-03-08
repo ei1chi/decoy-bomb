@@ -51,7 +51,12 @@ func initDecoys() {
 func processDecoys() {
 	// トリガー処理
 	x, y := et.CursorPosition()
-	if et.IsMouseButtonPressed(et.MouseButtonLeft) {
+	touched := false
+	for _, t := range et.Touches() {
+		x, y = t.Position()
+		touched = true
+	}
+	if touched || et.IsMouseButtonPressed(et.MouseButtonLeft) {
 		if !isMouseHold {
 			d := Decoy{
 				exist:  true,
