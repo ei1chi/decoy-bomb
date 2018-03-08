@@ -69,18 +69,20 @@ func (g *NormalGx) draw(sc *et.Image) {
 func (g *NormalGx) update() {
 	switch {
 	case g.count == 0: // init
-	case g.count%80 == 0:
-		c := powi(around / 8)
-		dir := 1 + 0i
-		dir *= powi(rand.Float64()) // between a phase
-		for n := 0; n < 8; n++ {
-			ghost := &NormalGs{}
-			ghost.pos = g.pos
-			ghost.vec = dir
-			ghosts = append(ghosts, ghost)
-			dir *= c
+	case g.count < 180:
+		if g.count%80 == 0 {
+			dir := powi(around * rand.Float64()) // any direction
+			const ways = 8
+			c := powi(around / ways)
+			for n := 0; n < ways; n++ {
+				ghost := &NormalGs{}
+				ghost.pos = g.pos
+				ghost.vec = dir
+				ghosts = append(ghosts, ghost)
+				dir *= c
+			}
 		}
-	case g.count > 180:
+	default:
 		g.dead = true
 	}
 	g.checkArea()

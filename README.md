@@ -6,4 +6,4 @@ tiny game
 
 clone it and go build
 
-TODO) publish in github.io
+play here <https://ei1chi.github.io/decoy-bomb>

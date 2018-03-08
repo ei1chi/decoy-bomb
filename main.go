@@ -38,7 +38,9 @@ func main() {
 		"quit",
 	})
 	rand.Seed(time.Now().UnixNano())
-	err := et.Run(update, 480, 640, 1, "decoy and bomb")
+	s := getScale()
+	log.Print(s)
+	err := et.Run(update, 480, 640, s, "decoy and bomb")
 	if err != nil && err != ErrSuccess {
 		log.Fatal(err)
 	}
