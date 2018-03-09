@@ -3,7 +3,7 @@ package main
 import "math"
 
 func collision() {
-	for _, d := range decoys.arr {
+	for i, d := range decoys.arr {
 		if !d.exist {
 			continue
 		}
@@ -13,7 +13,7 @@ func collision() {
 			distsq := math.Pow(imag(diff), 2) + math.Pow(real(diff), 2)
 			limitsq := math.Pow(d.radius+gr, 2)
 			if limitsq > distsq {
-				g.hit(1)
+				g.hit(i, &d)
 			}
 		}
 	}

@@ -1,9 +1,16 @@
 package main
 
-import et "github.com/hajimehoshi/ebiten"
+import (
+	"math"
+	"math/rand"
+
+	et "github.com/hajimehoshi/ebiten"
+)
 
 type Decoy struct {
-	exist  bool
+	exist bool // for tank
+	id    int  // for tank
+
 	power  int
 	radius float64
 	pos    complex128
@@ -35,12 +42,13 @@ func (d *Decoys) remove(idx int) {
 
 const (
 	decoysMax = 5
-	powerMax  = 300
+	powerMax  = 100
 )
 
 var (
 	decoys      *Decoys
 	isMouseHold bool
+	nextDecoyId = 1
 )
 
 func initDecoys() {
@@ -60,11 +68,13 @@ func processDecoys() {
 		if !isMouseHold {
 			d := Decoy{
 				exist:  true,
+				id:     nextDecoyId,
 				power:  powerMax,
 				radius: 125,
 				pos:    complex(float64(x), float64(y)),
 			}
 			decoys.add(d)
+			nextDecoyId += 1
 		}
 		isMouseHold = true
 	} else {
@@ -80,6 +90,12 @@ func processDecoys() {
 		d.power -= 1
 		if d.power < 0 {
 			decoys.remove(i)
+			for n := 0; n < 10; n++ {
+				f := Fragment{}
+				f.pos = d.pos
+				f.angle = math.Pi*2*rand.Float64() - math.Pi
+				fragments = append(fragments, f)
+			}
 		}
 	}
 }

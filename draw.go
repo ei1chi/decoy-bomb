@@ -9,6 +9,16 @@ func drawAll(screen *et.Image) {
 	var sp *Sprite
 	op := &et.DrawImageOptions{}
 
+	sp = sprites["star"]
+	for _, f := range fragments {
+		op := sp.center()
+		op.GeoM.Scale(0.3, 0.3)
+		op.GeoM.Rotate(f.angle)
+		op.GeoM.Translate(real(f.pos), imag(f.pos))
+		op.ColorM.Translate(0, 0, 0, f.speed/3.0-1.0)
+		screen.DrawImage(sp.image, op)
+	}
+
 	sp = sprites["galaxy"]
 	for _, g := range galaxies {
 		g.draw(screen)

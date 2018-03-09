@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"math/cmplx"
 
 	et "github.com/hajimehoshi/ebiten"
@@ -25,14 +24,15 @@ type Ghost interface {
 	draw(screen *et.Image)
 	isDead() bool
 	collInfo() (pos complex128, r float64)
-	hit(int)
+	hit(int, *Decoy)
 }
 
 type GhostBase struct {
 	count    int
 	dead     bool
 	pos, vec complex128
-	leadTo   int // player base(-1) or decoy(0~)
+
+	targetIdx, targetId int
 }
 
 func (g *GhostBase) isDead() bool {
@@ -40,14 +40,12 @@ func (g *GhostBase) isDead() bool {
 }
 
 func (g *GhostBase) collInfo() (pos complex128, r float64) {
-	return g.pos, 32
+	return g.pos, 16
 }
 
-func (g *GhostBase) hit(id int) {
-	if g.leadTo != id {
-		log.Print("hit")
-	}
-	g.leadTo = id
+func (g *GhostBase) hit(i int, d *Decoy) {
+	g.targetIdx = i
+	g.targetId = d.id
 }
 
 func (g *GhostBase) drawSimple(sc *et.Image) {
@@ -86,23 +84,24 @@ func (g *NormalGs) draw(sc *et.Image) {
 func (g *NormalGs) update() {
 	switch {
 	case g.count == 0: // init
-	case g.count < 60:
-		g.speed = 2.0 - (float64(g.count)/60)*1.0
-	case g.count < 90:
-		g.speed = 1.0 + float64(g.count-60)/30
-	case g.count < 180:
-		g.speed = 2
+		g.speed = 1
+	//case g.count < 60:
+	//	g.speed = 2.0 - (float64(g.count)/60)*1.0
+	//case g.count < 90:
+	//	g.speed = 1.0 + float64(g.count-60)/30
+	case g.count < 600:
+		g.speed = 1
 	default:
 		g.dead = true
 	}
 
-	to := decoys.arr[g.leadTo]
-	if to.exist {
-		diff := to.pos - g.pos
+	tag := decoys.arr[g.targetIdx]
+	if tag.exist && tag.id == g.targetId {
+		diff := tag.pos - g.pos
 		diff /= complex(cmplx.Abs(diff), 0)
-		g.vec += diff * 0.7
-		g.vec = g.vec / complex(cmplx.Abs(g.vec)*g.speed, 0)
+		g.vec += diff / 9
 	}
+	g.vec *= complex(g.speed/cmplx.Abs(g.vec), 0)
 	g.pos += g.vec
 	g.checkArea()
 	g.count += 1

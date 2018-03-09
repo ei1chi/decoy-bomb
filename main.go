@@ -36,10 +36,10 @@ func main() {
 		"circle",
 		"castle",
 		"quit",
+		"star",
 	})
 	rand.Seed(time.Now().UnixNano())
 	s := getScale()
-	log.Print(s)
 	err := et.Run(update, 480, 640, s, "decoy and bomb")
 	if err != nil && err != ErrSuccess {
 		log.Fatal(err)
@@ -48,6 +48,7 @@ func main() {
 
 func update(screen *et.Image) error {
 
+	processStars()
 	processGenerator()
 	processDecoys()
 	processGalaxies()
@@ -73,7 +74,7 @@ func update(screen *et.Image) error {
 		}
 	}
 	if quit {
-		return errors.New("success")
+		return ErrSuccess
 	}
 
 	// FPSほかデバッグ用
