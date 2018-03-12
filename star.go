@@ -51,10 +51,11 @@ type Star struct {
 func (s *Star) update() bool {
 	switch s.state {
 	case starMoving:
-		s.pos = complex(cursorX, cursorY)
 		if !pressed { // 離した
 			s.state = starFired
 			s.count = 0
+		} else {
+			s.pos = complex(cursorX, cursorY)
 		}
 	case starFired:
 		if s.count > 64 {
