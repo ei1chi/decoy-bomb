@@ -24,15 +24,14 @@ type Ghost interface {
 	draw(screen *et.Image)
 	isDead() bool
 	collInfo() (pos complex128, r float64)
-	hit(int, *Decoy)
+	hit(complex128, StarStates)
 }
 
 type GhostBase struct {
-	count    int
-	dead     bool
-	pos, vec complex128
-
-	targetIdx, targetId int
+	count               int
+	dead                bool
+	pos, vec, targetPos complex128
+	targetState         StarStates
 }
 
 func (g *GhostBase) isDead() bool {
@@ -43,9 +42,12 @@ func (g *GhostBase) collInfo() (pos complex128, r float64) {
 	return g.pos, 16
 }
 
-func (g *GhostBase) hit(i int, d *Decoy) {
-	g.targetIdx = i
-	g.targetId = d.id
+func (g *GhostBase) hit(spos complex128, state StarStates) {
+	if state == starBlasting {
+		g.dead = true
+	}
+	g.targetPos = spos
+	g.targetState = state
 }
 
 func (g *GhostBase) drawSimple(sc *et.Image) {
@@ -95,11 +97,11 @@ func (g *NormalGs) update() {
 		g.dead = true
 	}
 
-	tag := decoys.arr[g.targetIdx]
-	if tag.exist && tag.id == g.targetId {
-		diff := tag.pos - g.pos
+	switch g.targetState {
+	case starMoving:
+		diff := g.targetPos - g.pos
 		diff /= complex(cmplx.Abs(diff), 0)
-		g.vec += diff / 9
+		g.vec -= diff / 9
 	}
 	g.vec *= complex(g.speed/cmplx.Abs(g.vec), 0)
 	g.pos += g.vec

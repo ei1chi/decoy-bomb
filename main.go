@@ -25,7 +25,7 @@ func powi(angle float64) complex128 {
 }
 
 func init() {
-	initDecoys()
+	initStars()
 }
 
 func main() {
@@ -48,13 +48,13 @@ func main() {
 
 func update(screen *et.Image) error {
 
+	updateInput()
+
 	processStars()
 	processGenerator()
-	processDecoys()
 	processGalaxies()
 	processGhosts()
 
-	// 当たり判定とベクトル変化
 	collision()
 
 	drawAll(screen)
@@ -62,14 +62,8 @@ func update(screen *et.Image) error {
 
 	// 終了判定
 	quit := et.IsKeyPressed(et.KeyQ)
-	x, y := et.CursorPosition()
-	touched := false
-	for _, t := range et.Touches() {
-		x, y = t.Position()
-		touched = true
-	}
-	if (480-32) < x && y < 32 {
-		if touched || et.IsMouseButtonPressed(et.MouseButtonLeft) {
+	if (480-32) < cursorX && cursorY < 32 {
+		if pressed {
 			quit = true
 		}
 	}

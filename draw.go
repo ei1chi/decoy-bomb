@@ -10,14 +10,26 @@ func drawAll(screen *et.Image) {
 	op := &et.DrawImageOptions{}
 
 	sp = sprites["star"]
-	for _, f := range fragments {
-		op := sp.center()
-		op.GeoM.Scale(0.3, 0.3)
-		op.GeoM.Rotate(f.angle)
-		op.GeoM.Translate(real(f.pos), imag(f.pos))
-		op.ColorM.Translate(0, 0, 0, f.speed/3.0-1.0)
-		screen.DrawImage(sp.image, op)
+	op = sp.center()
+	op.GeoM.Translate(cursorX, cursorY)
+	op.ColorM.Translate(0, 0, 0, -0.5)
+	screen.DrawImage(sp.image, op)
+
+	for i, _ := range stars.arr {
+		s := &stars.arr[i]
+		if !s.exist {
+			continue
+		}
+		s.draw(screen)
 	}
+	//for _, f := range fragments {
+	//	op := sp.center()
+	//	op.GeoM.Scale(0.3, 0.3)
+	//	op.GeoM.Rotate(f.angle)
+	//	op.GeoM.Translate(real(f.pos), imag(f.pos))
+	//	op.ColorM.Translate(0, 0, 0, f.speed/3.0-1.0)
+	//	screen.DrawImage(sp.image, op)
+	//}
 
 	sp = sprites["galaxy"]
 	for _, g := range galaxies {
@@ -30,31 +42,18 @@ func drawAll(screen *et.Image) {
 	}
 
 	sp = sprites["circle"]
-	for i, _ := range decoys.arr {
-		d := &decoys.arr[i]
-		if !d.exist {
-			continue
-		}
-		op := sp.center()
-		op.GeoM.Translate(real(d.pos), imag(d.pos))
-		rate := float64(d.power) / powerMax
-		alpha := -1.0 + (0.6 * rate)
-		op.ColorM.Translate(0, 0, 0, alpha)
-		screen.DrawImage(sp.image, op)
-	}
-
-	sp = sprites["decoy"]
-	for i, _ := range decoys.arr {
-		d := &decoys.arr[i]
-		if !d.exist {
-			continue
-		}
-		op := sp.center()
-		op.GeoM.Translate(real(d.pos), imag(d.pos))
-		rate := 1.0
-		op.ColorM.Translate(0, 0, 0, rate-1.0)
-		screen.DrawImage(sp.image, op)
-	}
+	//for i, _ := range decoys.arr {
+	//	d := &decoys.arr[i]
+	//	if !d.exist {
+	//		continue
+	//	}
+	//	op := sp.center()
+	//	op.GeoM.Translate(real(d.pos), imag(d.pos))
+	//	rate := float64(d.power) / powerMax
+	//	alpha := -1.0 + (0.6 * rate)
+	//	op.ColorM.Translate(0, 0, 0, alpha)
+	//	screen.DrawImage(sp.image, op)
+	//}
 
 	sp = sprites["castle"]
 	op = &et.DrawImageOptions{}

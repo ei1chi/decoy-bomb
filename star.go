@@ -2,54 +2,9 @@ package main
 
 import (
 	"math/cmplx"
+
+	et "github.com/hajimehoshi/ebiten"
 )
-
-type Star struct {
-	exist bool // for tank
-	id    int  // for tank
-
-	blastR  float64 // 炸裂半径
-	rplsR   float64 // 斥力半径
-	rplsMag float64 // 斥力強さ
-	count   int
-	pos     complex128
-	state   StarStates
-}
-
-type StarStates int
-
-const (
-	starHold StarStates = iota
-	starFired
-	starBlasting
-)
-
-type Stars struct {
-	h      TankHistory
-	arr    []Star
-	nextId int
-}
-
-func (b *Stars) init(size int) {
-	b.h.Init(size)
-	b.arr = make([]Star, size)
-}
-
-func (b *Stars) add(val Star) error {
-	idx, err := b.h.Pop()
-	if err != nil {
-		return err
-	}
-	b.nextId += 1
-	b.arr[idx] = val
-	b.arr[idx].id = b.nextId
-	return nil
-}
-
-func (b *Stars) remove(idx int) {
-	b.arr[idx].exist = false
-	b.h.Push(idx)
-}
 
 type Fragment struct {
 	pos          complex128
@@ -72,11 +27,69 @@ func (f *Fragment) update() {
 	f.count += 1
 }
 
+type StarStates int
+
+const (
+	noStar StarStates = iota
+	starMoving
+	starFired
+	starBlasting
+)
+
+type Star struct {
+	exist bool // for tank
+	id    int  // for tank
+
+	blastR  float64 // 炸裂半径
+	rplsR   float64 // 斥力半径
+	rplsMag float64 // 斥力強さ
+	count   int
+	pos     complex128
+	state   StarStates
+}
+
+func (s *Star) update() bool {
+	switch s.state {
+	case starMoving:
+		s.pos = complex(cursorX, cursorY)
+		if !pressed { // 離した
+			s.state = starFired
+			s.count = 0
+		}
+	case starFired:
+		if s.count > 64 {
+			s.state = starBlasting
+			s.count = 0
+		}
+	case starBlasting:
+		if s.count > 20 {
+			return false
+		}
+	}
+	s.count += 1
+	return true
+}
+
+func (s *Star) draw(sc *et.Image) {
+	sp := sprites["star"]
+	op := sp.center()
+	switch s.state {
+	case starFired:
+		if s.count%8 < 4 {
+			op.ColorM.Translate(0, 0, 0, -1)
+		}
+	}
+	op.GeoM.Translate(real(s.pos), imag(s.pos))
+	sc.DrawImage(sp.image, op)
+}
+
+// 型定義ここまで
+//=========================
+
 var (
 	starsMax  = 3
 	stars     = &Stars{}
 	fragments = []Fragment{}
-	//isMouseHold bool
 )
 
 func initStars() {
@@ -85,9 +98,28 @@ func initStars() {
 
 func processStars() {
 
+	// トリガーでスター生成
 	// 押しっぱなしで移動・反発
-	for i, _ := range fragments {
-		f := &fragments[i]
-		f.update()
+	// 離して爆発
+	if isJustPressed {
+		s := Star{}
+		s.pos = complex(cursorX, cursorY)
+		s.state = starMoving
+		stars.add(s)
 	}
+
+	for i, _ := range stars.arr {
+		s := &stars.arr[i]
+		if !s.exist {
+			continue
+		}
+		if ok := s.update(); !ok {
+			stars.remove(i)
+		}
+	}
+
+	//for i, _ := range fragments {
+	//f := &fragments[i]
+	//f.update()
+	//}
 }
