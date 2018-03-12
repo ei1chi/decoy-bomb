@@ -71,8 +71,12 @@ func update(screen *et.Image) error {
 		return ErrSuccess
 	}
 
-	// FPSほかデバッグ用
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("FPS: %f\nGhosts: %d", et.CurrentFPS(), len(ghosts)))
+	// FPS
+	str := "FPS: %f\n"
+	str += "1) hold and move the star. star pushes ghosts out\n"
+	str += "2) release the star to delete ghosts around\n"
+	str += "3) don't make ghosts arrive at your castle (<- not implemented)"
+	ebitenutil.DebugPrint(screen, fmt.Sprintf(str, et.CurrentFPS()))
 
 	return nil
 }
