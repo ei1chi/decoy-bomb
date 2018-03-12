@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"math/cmplx"
 
 	et "github.com/hajimehoshi/ebiten"
@@ -40,12 +41,13 @@ type Star struct {
 	exist bool // for tank
 	id    int  // for tank
 
-	blastR  float64 // 炸裂半径
-	rplsR   float64 // 斥力半径
-	rplsMag float64 // 斥力強さ
-	count   int
-	pos     complex128
-	state   StarStates
+	blastR                   float64 // 炸裂半径
+	rplsR                    float64 // 斥力半径
+	rplsMag                  float64 // 斥力強さ
+	count                    int
+	pos, pPos, ppPos, pppPos complex128 // 位置、前回位置、前々回位置
+	angle                    float64
+	state                    StarStates
 }
 
 func (s *Star) update() bool {
@@ -55,7 +57,17 @@ func (s *Star) update() bool {
 			s.state = starFired
 			s.count = 0
 		} else {
-			s.pos = complex(cursorX, cursorY)
+			next := complex(cursorX, cursorY)
+			d := next - s.pos
+			if cmplx.Abs(d) > 0.5 {
+				s.pppPos = s.ppPos
+				s.ppPos = s.pPos
+				s.pPos = s.pos
+				s.pos = next
+				b := s.pos - s.bezier()
+				s.angle = math.Atan2(imag(b), real(b))
+			}
+			s.pos = next
 		}
 	case starFired:
 		if s.count > 64 {
@@ -71,6 +83,13 @@ func (s *Star) update() bool {
 	return true
 }
 
+func (s *Star) bezier() complex128 {
+	t := math.Pow(0.5, 3)
+	x := t*real(s.pppPos) + 3*t*real(s.ppPos) + 3*t*real(s.pPos) + t*real(s.pos)
+	y := t*imag(s.pppPos) + 3*t*imag(s.ppPos) + 3*t*imag(s.pPos) + t*imag(s.pos)
+	return complex(x, y)
+}
+
 func (s *Star) draw(sc *et.Image) {
 	sp := sprites["star"]
 	op := sp.center()
@@ -80,6 +99,7 @@ func (s *Star) draw(sc *et.Image) {
 			op.ColorM.Translate(0, 0, 0, -1)
 		}
 	}
+	op.GeoM.Rotate(s.angle)
 	op.GeoM.Translate(real(s.pos), imag(s.pos))
 	sc.DrawImage(sp.image, op)
 }

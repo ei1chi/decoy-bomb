@@ -10,10 +10,12 @@ func drawAll(screen *et.Image) {
 	op := &et.DrawImageOptions{}
 
 	sp = sprites["star"]
-	op = sp.center()
-	op.GeoM.Translate(cursorX, cursorY)
-	op.ColorM.Translate(0, 0, 0, -0.5)
-	screen.DrawImage(sp.image, op)
+	if !pressed {
+		op = sp.center()
+		op.GeoM.Translate(cursorX, cursorY)
+		op.ColorM.Translate(0, 0, 0, -0.5)
+		screen.DrawImage(sp.image, op)
+	}
 
 	for i, _ := range stars.arr {
 		s := &stars.arr[i]
