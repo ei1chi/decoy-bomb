@@ -16,7 +16,9 @@ func updateInput() {
 	pressed = et.IsMouseButtonPressed(et.MouseButtonLeft)
 	for _, t := range et.Touches() {
 		x, y = t.Position()
-		pressed = true
+		if x+y > 0 {
+			pressed = true
+		}
 	}
 	cursorX, cursorY = float64(x), float64(y)
 
